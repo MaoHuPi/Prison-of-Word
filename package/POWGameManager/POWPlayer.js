@@ -1,7 +1,7 @@
 /*
  * 2024 (c) MaoHuPi
  * POWGameManager/POWPlayer.js
- * v1.0.0
+ * v1.0.1
  * 用以載入POW遊戲劇情專案檔，並處理遊戲過程中的邏輯判斷與變數存儲
  */
 
@@ -169,7 +169,7 @@ const POWPlayer = (() => {
 															let i1 = ntp[0][0] == ntp[1][0] ? 0 : 1,
 																i2 = i1 == 0 ? 1 : 0;
 															let newCenter = [0, 0];
-															newCenter[i2] = rc[i2] + (lc[i2] - rc[i2]) / (lc[i1] - rc[i1]) * (rc[i1] - ntp[0][i1]);
+															newCenter[i2] = rc[i2] + (lc[i2] - rc[i2]) / (lc[i1] - rc[i1]) * (ntp[0][i1] - rc[i1]);
 															newCenter[i1] = ntp[0][i1];
 															newCenter = newCenter.map((n, i) => (n + rc[i]) / 2);
 															return { center: newCenter, size: leftExpressionData.value.size };
