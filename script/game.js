@@ -161,6 +161,10 @@ async function initGameCycle(initData) {
 		[tempCvs[key].width, tempCvs[key].height] = [CW, CH];
 	});
 	let lastTime = Date.now(), currentTime = undefined;
+	var wordsBoxDisplay = { x: 50, y: 50, w: 370, h: 980 };
+	var wordsBoxPadding = 50;
+	var wordHeight = 100;
+	var wordGap = 30;
 	async function renderScene(sceneIndex) {
 		var [sceneType, sceneId] = sceneIndex;
 		var sceneIndexText = `${sceneType}-${sceneId}`;
@@ -214,6 +218,10 @@ async function initGameCycle(initData) {
 				sceneVariable.getWords = dialog.appendWords.filter(word => !sceneVariable.words.includes(word));
 				sceneVariable.words.push(...sceneVariable.getWords);
 				sceneVariable.newWords.push(...sceneVariable.getWords);
+				if (sceneVariable.getWords.length > 0) {
+					// 當獲得新詞卡時捲動條捲到最下端
+					sceneVariable.wordBoxScrollY = ((sceneVariable.words.length - ['s', 'v', 'o'].map(k => sceneVariable[k] !== '' ? 1 : 0).reduce((s, n) => s + n)) * (wordHeight + wordGap) - wordGap) - (wordsBoxDisplay.h - wordsBoxPadding * 2);
+				}
 				dialog.removeWords.forEach(word => {
 					if (sceneVariable.words.includes(word)) {
 						sceneVariable.words.splice(sceneVariable.words.indexOf(word), 1);
@@ -269,7 +277,7 @@ async function initGameCycle(initData) {
 				if (lineNumber > maxLineNumber) {
 					throw Error(`'dialog.message' overflow! Message length is ${messageData.length}, but it only allow ${lineLength * maxLineNumber}`);
 				}
-				sceneVariable.wordBoxScrollY = 0;
+				if (sceneChanged) sceneVariable.wordBoxScrollY = 0;
 				sceneVariable.dialogMessageData = messageData;
 				sceneVariable.dialogMessageAniChar = 0;
 				sceneVariable.dialogMessageAniTimeLeft = 0;
@@ -339,10 +347,6 @@ async function initGameCycle(initData) {
 			// words box
 			ctx.fillStyle = '#00000088';
 			ctx.strokeStyle = color.buttonHover;
-			var wordsBoxDisplay = { x: 50, y: 50, w: 370, h: 980 };
-			var wordsBoxPadding = 50;
-			var wordHeight = 100;
-			var wordGap = 30;
 			var { x, y, w, h } = wordsBoxDisplay;
 			ctx.fillRect(x, y, w, h);
 			ctx.strokeRect(x, y, w, h);
