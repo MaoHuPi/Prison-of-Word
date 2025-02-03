@@ -129,3 +129,12 @@
 
 1. 修正「獲得新詞卡時重製磁卡欄位捲軸」
 2. 使獲得新詞卡時捲軸捲至最下方
+
+* 2025/02/03 16:12 [m]
+
+1. 更新`POWGameManager/POWPlayer.js`至`v1.0.3`
+2. 新增`data/menu.json`下`charter > elements > buttonGrid`的`id`屬性
+3. `script/game.js`新增`sceneVariable.unlockedLevel`以記錄解鎖的關卡
+4. 新增過關條件判斷與解鎖新章節之機制
+5. 新增找不到關卡檔案的彈出提示
+6. 修正詞卡欄位最下端之新字卡的發光效果消失問題
