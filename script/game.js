@@ -153,6 +153,7 @@ async function initGameCycle(initData) {
 
 	/* change background */
 	const sceneVariable = {};
+	sceneVariable.unlockedLevel = [1];
 
 	const tempCvs = {}, tempCtx = {};
 	['dialog', 'words', 'draggingWord'].forEach(key => {
@@ -188,7 +189,14 @@ async function initGameCycle(initData) {
 				sceneVariable.getWords = [];
 				player = new POWPlayer();
 				window.player = player;
-				await player.load(`data/chapter${dialogLevel}.pow`);
+				try {
+					await player.load(`data/chapter${dialogLevel}.pow`);
+				} catch (error) {
+					currentScene = ['menu', 'charter'];
+					console.error(error);
+					alert('關卡丟失......或者還沒做，抱歉！');
+					return;
+				}
 				sceneVariable.partOfSpeechData = player.getPOSDict();
 			}
 
@@ -214,7 +222,6 @@ async function initGameCycle(initData) {
 				} else {
 					dialog = player.exec([sceneVariable.s, sceneVariable.v, sceneVariable.o]);
 				}
-				console.log(dialog); // debug
 				sceneVariable.lastDialog = dialog;
 				sceneVariable.getWords = dialog.appendWords.filter(word => !sceneVariable.words.includes(word));
 				sceneVariable.words.push(...sceneVariable.getWords);
@@ -391,7 +398,9 @@ async function initGameCycle(initData) {
 							) {
 								sceneVariable[type] = wordData.label;
 								let nw = sceneVariable.newWords;
-								nw.splice(nw.indexOf(wordData.label), 1);
+								if (nw.includes(wordData.label)) {
+									nw.splice(nw.indexOf(wordData.label), 1);
+								}
 							}
 						});
 						scale = 1;
@@ -487,6 +496,30 @@ async function initGameCycle(initData) {
 				label: '返回',
 				destination: ['menu', 'charter']
 			});
+
+			// 檢查遊戲變數「tof 過關條件達成」，為真則更新解鎖狀態與UI屬性
+			// 從 menuData 選擇UI屬性之路徑（方法）具專一性，改變 menu.json 結構後需重新檢查是否可正常進行解鎖
+			if (player?.getVariableValue('tof 過關條件達成')) {
+				let nextDialogLevel = parseInt(sceneId) + 1;
+				if (!sceneVariable.unlockedLevel.includes(nextDialogLevel)) {
+					sceneVariable.unlockedLevel.push(nextDialogLevel);
+					menuData['charter']['elements']
+						.filter(element => element.id == 'charterButtonGrid')[0]['button']
+						.reduce((a, b) => [...a, ...b])
+						.map(button => {
+							let unlocked = sceneVariable.unlockedLevel.includes(button.destination[1]);
+							if (button.class == undefined) button.class = [];
+							console.log(button.class.includes('disabled'), unlocked)
+							if (button.class.includes('disabled') && unlocked) {
+								button.class.splice(button.class.indexOf('disabled'), 1);
+							} else if ((!button.class.includes('disabled')) && (!unlocked)) {
+								button.class.push('disabled');
+							}
+						});
+					console.log(menuData);
+					currentScene = ['menu', 'charter'];
+				}
+			}
 		}
 	}
 

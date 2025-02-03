@@ -89,6 +89,7 @@
 			}, 
 			{
 				"type": "buttonGrid",
+				"id": "charterButtonGrid", 
 				"display": {
 					"x": 480,
 					"y": 500,

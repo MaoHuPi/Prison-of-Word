@@ -1,7 +1,7 @@
 /*
  * 2024 (c) MaoHuPi
  * POWGameManager/POWPlayer.js
- * v1.0.1
+ * v1.0.3
  * 用以載入POW遊戲劇情專案檔，並處理遊戲過程中的邏輯判斷與變數存儲
  */
 
@@ -246,7 +246,7 @@ const POWPlayer = (() => {
 		}
 		constructor() { }
 		load(source) {
-			return new Promise(async resolve => {
+			return new Promise(async (resolve, reject) => {
 				if (source instanceof POWProject) {
 					this.#project = source;
 					resolve();
@@ -257,6 +257,10 @@ const POWPlayer = (() => {
 				} else if (typeof source == 'string') {
 					let xhr = new XMLHttpRequest();
 					xhr.addEventListener('load', async () => {
+						if (xhr.status !== 200) {
+							reject('找不到檔案！');
+							return;
+						}
 						let zip = await JSZip.loadAsync(xhr.response);
 						this.#project = await POWProject.fromZip(zip);
 						resolve();
@@ -266,8 +270,7 @@ const POWPlayer = (() => {
 					xhr.open('GET', source);
 					xhr.send();
 				} else {
-					throw Error('不支援此格式！');
-					resolve();
+					reject('不支援此格式！');
 				};
 			});
 		}
@@ -299,6 +302,13 @@ const POWPlayer = (() => {
 				});
 			});
 			return POSDict;
+		}
+		getVariableValue(variableName) {
+			if (variableName in this.#variableDict['var']) {
+				return this.#variableDict['var'][variableName];
+			} else {
+				throw Error('嘗試取得未定義的變數數值！');
+			}
 		}
 	}
 	return POWPlayer;
