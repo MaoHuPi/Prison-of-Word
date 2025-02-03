@@ -69,6 +69,7 @@ async function initGameCycle(initData) {
 			ctx.fillStyle = color.buttonHover;
 			if (mouse.click) {
 				currentScene = element.destination;
+				if (element.callback) element.callback();
 				mouse.click = false;
 			}
 		} else {
@@ -389,6 +390,7 @@ async function initGameCycle(initData) {
 					scale = 0.8;
 					targetCtx = tempCtx.draggingWord;
 					if (mouse.up) {
+						sceneVariable.lastDraggingWord_forRigidbody = sceneVariable.draggingWord;
 						sceneVariable.draggingWord = undefined;
 						['s', 'v', 'o'].forEach(type => {
 							if (
@@ -494,8 +496,20 @@ async function initGameCycle(initData) {
 					"h": 120
 				},
 				label: '返回',
-				destination: ['menu', 'charter']
+				destination: ['menu', 'charter'],
+				callback: () => {
+					// 拖曳中詞卡轉為掉落文字
+					if (sceneVariable.lastDraggingWord_forRigidbody) {
+						sceneVariable.lastDraggingWord_forRigidbody.split('').map((char, i) => {
+							rigidbodyPool.create({
+								x: mouse.x + (-sceneVariable.lastDraggingWord_forRigidbody.length / 2 + i) * 50,
+								y: mouse.y, text: char, size: 50
+							});
+						});
+					}
+				}
 			});
+			sceneVariable.lastDraggingWord_forRigidbody = undefined;
 
 			// 檢查遊戲變數「tof 過關條件達成」，為真則更新解鎖狀態與UI屬性
 			// 從 menuData 選擇UI屬性之路徑（方法）具專一性，改變 menu.json 結構後需重新檢查是否可正常進行解鎖
@@ -523,6 +537,15 @@ async function initGameCycle(initData) {
 		}
 	}
 
+	let rigidbodyPool = new WordRigidbodyPool({ cvs, ctx, width: cvs.width, height: cvs.height });
+	function renderRigidbodyPool() {
+		// 在點擊處生成隨機文字（測試用）
+		// if (mouse.down) {
+		// 	rigidbodyPool.create({ x: mouse.x, y: mouse.y, text: '文字獄'[Math.floor(Math.random()*3)], size: 50 });
+		// }
+		rigidbodyPool.update();
+	}
+
 	/* background */
 	let currentScene = ['menu', 'main']; // or 'dialog'
 	let screenshotList = [];
@@ -531,6 +554,7 @@ async function initGameCycle(initData) {
 		let deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
 		await renderScene(currentScene);
+		renderRigidbodyPool();
 		/* screenshot method and animation */
 		if (mouse.screenshot) {
 			let url = cvs.toDataURL();
