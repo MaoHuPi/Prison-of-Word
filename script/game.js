@@ -183,6 +183,7 @@ async function initGameCycle(initData) {
 				sceneVariable.newWords = [];
 				sceneVariable.getWords = [];
 				player = new POWPlayer();
+				window.player = player;
 				await player.load(`data/chapter${dialogLevel}.pow`);
 				sceneVariable.partOfSpeechData = player.getPOSDict();
 			}
